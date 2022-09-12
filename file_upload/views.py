@@ -16,8 +16,6 @@ def home(request):
 def signup(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
-        for field in form:
-            print("Field Error:", field.name, field.errors)
         if form.is_valid():
             form.save()
         return redirect("home")
@@ -30,6 +28,17 @@ def upload(request):
     context = {}
     if request.method == "POST":
         uploaded_file = request.FILES["document"]
+
+        if uploaded_file.content_type != "application/json":
+            json_data = JsonData.objects.filter(user=request.user.id)
+            return render(
+                request,
+                "home.html",
+                context={
+                    "wrong_content_type": "wrong_content_type",
+                    "json_data": json_data,
+                },
+            )
         jdata = uploaded_file.read()
         json_data = json.loads(jdata)
         for d in json_data:
